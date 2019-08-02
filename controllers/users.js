@@ -21,7 +21,7 @@ const getUserById = (req, res) => {
 }
 
 const createUser = (req, res) => {
-  pool.query('INSERT INTO users SET ?', {first_name: 'test', last_name: 'user' }, (err, results) => {
+  pool.query('INSERT INTO users SET ?', {first_name: `${req.body.first_name}`, last_name: `${req.body.last_name}` }, (err, results) => {
     if (err) return handleSQLError(res, err)
     return res.json({ newId: results.insertId });
   })
@@ -29,26 +29,30 @@ const createUser = (req, res) => {
 
 const updateUserById = (req, res) => {
   let sql = `UPDATE ?? SET first_name = ?, last_name = ? WHERE id =  ${req.params.id}`
-  sql = mysql.format(sql, ['users', 'Yubba', 'Yubba' ])
+  sql = mysql.format(sql, ['users', `${req.body.first_name}`, `${req.body.last_name}` ])
   pool.query(sql, (err, results) => {
     if (err) return handleSQLError(res, err)
     return res.status(204).json(results);
   })
 }
 
-const deleteUserByFirstName = (req, res) => {
-  let sql = `DELETE FROM ?? WHERE ?? = '${req.params.first_name}'`
-  sql = mysql.format(sql, ['users', 'first_name'])
+const deleteUser = (req, res) => {
+  const value = req.params.field == 'id' ? req.params.value : `'${req.params.value}'`
+  let sql = `DELETE FROM users WHERE ?? = ${value}`
+  sql = mysql.format(sql, [req.params.field])
   pool.query(sql, (err, results) => {
     if (err) return handleSQLError(res, err)
     return res.json({ message: `Deleted ${results.affectedRows} user(s)` });
   })
 }
 
+
+
+
 module.exports = {
   getAllUsers,
   getUserById,
   createUser,
   updateUserById,
-  deleteUserByFirstName
-}
+  deleteUser,
+  }
